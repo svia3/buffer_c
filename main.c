@@ -1,4 +1,4 @@
-
+g
 
 #include "buffer.h"
 #include <stdio.h>

@@ -12,7 +12,7 @@ struct buffer_t {
     uint8_t* buffer;
     size_t read_index;  // head of array -> start reading from here.
     size_t fill_index;  // next available byte to write to
-    // uint8_t size;
+    // uint8_t size; 
     size_t capacity;
     // bool full;
 };
