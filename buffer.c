@@ -8,7 +8,7 @@
 #define RX154_MAX_BUFF_SIZE 255
 
 /* How many bytes are available in the buffer? -> move over to buffer_c*/
-static void buffer_update_size(buffer_t* buf);
+static uint8_t buffer_get_size(buffer_t* buf);
 
 bool buffer_init(buffer_t* buf, size_t capacity)
 {
@@ -20,13 +20,13 @@ bool buffer_init(buffer_t* buf, size_t capacity)
 //    struct buf_handle_t buf_p;
 //    struct buffet_t = buf;
 //    buf_p = &buf;
-    uint8_t buf->buffer = malloc(capacity);
+    buf->buffer = (uint8_t*)malloc(capacity);
     if (!buf->buffer) {
         return false;
     }
     /* Default */
     buf->read_index = 0;
-    buf->fill_index = 10;
+    buf->fill_index = 0;
     buf->capacity = capacity;
     return true;
 }
@@ -39,10 +39,6 @@ void buffer_flush(buffer_t* buf)
     buf->fill_index = 0;
 }
 
-/**
- * Free the buffer array. Never call on embedded systems for contiguous memory.
- * @param buf Pass by pointer; address of buffer struct
- */
 void buffer_free(buffer_t* buf)
 {
     free(buf->buffer);
@@ -52,17 +48,17 @@ void buffer_free(buffer_t* buf)
  * Check how many bytes are available to read (occupied) in the buffer array.
  * @param buf Pass by pointer; address of buffer struct
  */
-static void buffer_update_size(buffer_t* buf)
+static uint8_t buffer_get_size(buffer_t* buf)
 {
     /* Init fill space */
     int total_bytes = 0;
-    if (buf->read_index - buf->fill_index) {
+    if (buf->read_index - buf->fill_index > 0) {
         total_bytes = buf->fill_index - buf->read_index;
     } else {
         /* Concat bytes at the end of the buffer and space filled at beginning */
-        total_bytes = RX154_MAX_BUFF_SIZE - buf->read_index + buf->fill_index + 1;
+        total_bytes = buf->capacity - buf->read_index + buf->fill_index + 1;
     }
-    buf->size = total_bytes;
+    return total_bytes;
 }
 
 /**
@@ -70,17 +66,16 @@ static void buffer_update_size(buffer_t* buf)
  * Move over the read pointer by one byte (one index)
  * Return -1 if no bytes available and none read.
  *
- * @param buf Pass by pointer; address of buffer struct
+ * @param buf      Pass by pointer; address of buffer struct
  * @return         Number of read bytes; copied into struct buffer
  */
-uint8_t buffer_read(buffer_t* buf)
+uint8_t buffer_read(buffer_t* src_buf)
 {
-    if(!buf->size) {
+    if(!buffer_get_size(src_buf)) {
         return -1;
     }                            /* Error */
-    uint8_t read_byte = buf->buffer[buf->read_index];         /* Index of read byte */
-    buf->read_index = buf->read_index + 1 % buf->capacity;    /* Increment read index */
-    buf->size -= 1;                                           /* Update size */
+    uint8_t read_byte = src_buf->buffer[src_buf->read_index];         /* Index of read byte */
+    src_buf->read_index = src_buf->read_index + 1 % src_buf->capacity;    /* Increment read index */
     return read_byte;
 }
 
@@ -92,78 +87,82 @@ uint8_t buffer_read(buffer_t* buf)
  * @param  buf_handle_buf Pass by pointer; address of buffer struct
  * @return                Number of read bytes; copied into struct buffer
  */
-uint8_t buffer_read_multiple(buffer_t* buf, buffer_t* user_buf, size_t r_size)
+uint8_t buffer_read_multiple(buffer_t* dest_buf, buffer_t* src_buf, size_t r_size)
 {
     /* If no bytes available. return immediately */
-    if(!buf->size) {
+    if(!buffer_get_size(src_buf)) {
         return -1;
     }
     /* Length of current buffer */
     int filled_bytes = 0;
-    if (buf->fill_index - buf->read_index > 0) {
+    if (src_buf->fill_index - src_buf->read_index > 0) {
         /* Length of occupied buffer  */
-        filled_bytes = buf->fill_index - buf->read_index;
+        filled_bytes = src_buf->fill_index - src_buf->read_index;
         /* Does the user want to read more bytes than the length of occupied memory? */
         if (filled_bytes > r_size) {
             filled_bytes = r_size;
         }
-        memcpy(user_buf, buf, filled_bytes);                                        // copy to local buffer by reference
-        buf->read_index = (buf->read_index + filled_bytes) % RX154_MAX_BUFF_SIZE;   // move read pointer mod length
-        buffer_update_size(buf);
+        // copy to local buffer by reference
+        memcpy(dest_buf, src_buf, filled_bytes);
+        // move read pointer mod length
+        src_buf->read_index = (src_buf->read_index + filled_bytes) % src_buf->capacity;
+        // move write pointer mod length
+        dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
         return filled_bytes;
     }
+
     /* Copy last and first chunks independently, move pointers accordingly */
-    int bytes_end = (RX154_MAX_BUFF_SIZE - buf->read_index);
-     memcpy(user_buf, buf, bytesCopyAtEnd);
+    int bytes_end = (src_buf->capacity - src_buf->read_index);
+    memcpy(dest_buf, &src_buf->buffer[src_buf->read_index], bytes_end);
+
     /* Copy the remaining bytes at the front of the circular buffer) */
     int rem_bytes = r_size - bytes_end;
-    // memcpy(buf, rx_buffer, remainingBytes);
+    memcpy(dest_buf, src_buf, rem_bytes);
+
     /* Move read pointer accordingly to amount of bytes read */
-    buf->read_index = rem_bytes;       // if 3 bytes were read, read_ptr will now be at index 3
+    src_buf->read_index = rem_bytes;       // if 3 bytes were read, read_ptr will now be at index 3
+    dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;   // move write ptr of dest buffer
+
     /* How to handle edge case where read pointer crosses write pointer? */
-    buffer_update_size(buf);
     return bytes_end + rem_bytes;
 }
 
-/**
- * Write a single byte to destination buffer.
- *
- */
-uint8_t buffer_write(buffer_t* buf, uint8_t write_byte)
+uint8_t buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 {
-
+    /* How full is the write buffer? */
+    uint8_t available = buffer_get_size(dest_buf);
+    int vacant = dest_buf->capacity - available;
+    if(vacant <= 0) {
+        buffer_flush(dest_buf);
+    }
+    uint8_t* dest_offset = dest_buf->buffer + dest_buf->fill_index;    /* Circular */
+    memcpy(dest_offset, &write_byte, 1);
+    /* Update write pointer by write size */
+    dest_buf->fill_index = (dest_buf->fill_index + 1) % dest_buf->capacity;
+    return true;
 }
 
-/**
- * Take bytes from source buffer and copy to destination buffer. Handles transfer
- * of data from MAC layer to APP.
- *
- * @param  src_buf  Pass by pointer
- * @param  dest_buf Pass by pointer
- * @param  w_size   Length of data
- * @return 1 if successful, 0 if not
- */
 uint8_t buffer_write_multiple(buffer_t* dest_buf, buffer_t* src_buf, size_t w_size) {
 
-    /* Update write pointers */
-    int vacant = dest_buf->capacity - dest_buf->size;
-    if(vacant <= w_size) {
+    /* How full is the write buffer? */
+    uint8_t available = buffer_get_size(dest_buf);
+    int vacant = dest_buf->capacity - available;
+    /* Are there less bytes available than number you want to write */
+    if(vacant < w_size) {
         buffer_flush(dest_buf);
     }
     /* Copy data over usign memset */
     if(w_size <= dest_buf->capacity) {
         uint8_t* dest_offset = dest_buf->buffer + dest_buf->fill_index;    /* Circular */
-        memcpy(dest_offset, src_buf, w_size);
+        memcpy(dest_offset, &src_buf[src_buf->read_index], w_size);
         /* Update write pointer by write size */
-        dest_buf->fill_index = (dest_buf->fill_index + w_size) % buf->capacity;
-        return 1;
+        dest_buf->fill_index = (dest_buf->fill_index + w_size) % dest_buf->capacity;
+        src_buf->read_index = (src_buf->read_index + w_size) % src_buf->capacity;
+        return true;
     }
-    return 0;
+    return false;
 }
 
-/**
- *
- */
 void buffer_print(buffer_t* buf) {
     for(int i = 0; i < buf->capacity; ++i) {
         printf("%d", buf->buffer[i]);
