@@ -67,7 +67,7 @@ uint8_t buffer_read_multiple(buffer_t* src_buf, buffer_t* dest_buf, size_t r_siz
  * @param  write_byte Byte to be written
  * @return            1 for success
  */
-uint8_t buffer_write(buffer_t* dest_buf, uint8_t write_byte);
+bool buffer_write(buffer_t* dest_buf, uint8_t write_byte);
 
 /**
  * Take bytes from source buffer and copy to destination buffer. Handles transfer
@@ -78,7 +78,7 @@ uint8_t buffer_write(buffer_t* dest_buf, uint8_t write_byte);
  * @param  w_size   Length of data
  * @return 1 if successful, 0 if not
  */
-uint8_t buffer_write_multiple(buffer_t* dest_buf, buffer_t* src_buf, size_t w_size);   /* Write from source to dest buffer for sending data */
+bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);   /* Write from source to dest buffer for sending data */
 
 /**
  * For app layer testing and debugging. Print the buffer array.

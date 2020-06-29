@@ -93,6 +93,10 @@ uint8_t buffer_read_multiple(buffer_t* dest_buf, buffer_t* src_buf, size_t r_siz
     if(!buffer_get_size(src_buf)) {
         return -1;
     }
+    /* Floor the write size if it is larger than the size of buffer */
+    if(r_size > buffer_get_size(src_buf)) {
+        r_size = buffer_get_size(src_buf);
+    }
     /* Length of current buffer */
     int filled_bytes = 0;
     if (src_buf->fill_index - src_buf->read_index > 0) {
@@ -114,20 +118,17 @@ uint8_t buffer_read_multiple(buffer_t* dest_buf, buffer_t* src_buf, size_t r_siz
     /* Copy last and first chunks independently, move pointers accordingly */
     int bytes_end = (src_buf->capacity - src_buf->read_index);
     memcpy(dest_buf, &src_buf->buffer[src_buf->read_index], bytes_end);
-
     /* Copy the remaining bytes at the front of the circular buffer) */
     int rem_bytes = r_size - bytes_end;
     memcpy(dest_buf, src_buf, rem_bytes);
-
     /* Move read pointer accordingly to amount of bytes read */
-    src_buf->read_index = rem_bytes;       // if 3 bytes were read, read_ptr will now be at index 3
-    dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;   // move write ptr of dest buffer
-
+    src_buf->read_index = rem_bytes;
+    dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
     /* How to handle edge case where read pointer crosses write pointer? */
     return bytes_end + rem_bytes;
 }
 
-uint8_t buffer_write(buffer_t* dest_buf, uint8_t write_byte)
+bool buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 {
     /* How full is the write buffer? */
     uint8_t available = buffer_get_size(dest_buf);
@@ -142,7 +143,7 @@ uint8_t buffer_write(buffer_t* dest_buf, uint8_t write_byte)
     return true;
 }
 
-uint8_t buffer_write_multiple(buffer_t* dest_buf, buffer_t* src_buf, size_t w_size) {
+bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size) {
 
     /* How full is the write buffer? */
     uint8_t available = buffer_get_size(dest_buf);
@@ -154,10 +155,9 @@ uint8_t buffer_write_multiple(buffer_t* dest_buf, buffer_t* src_buf, size_t w_si
     /* Copy data over usign memset */
     if(w_size <= dest_buf->capacity) {
         uint8_t* dest_offset = dest_buf->buffer + dest_buf->fill_index;    /* Circular */
-        memcpy(dest_offset, &src_buf[src_buf->read_index], w_size);
+        memcpy(dest_offset, &src_arr, w_size);
         /* Update write pointer by write size */
         dest_buf->fill_index = (dest_buf->fill_index + w_size) % dest_buf->capacity;
-        src_buf->read_index = (src_buf->read_index + w_size) % src_buf->capacity;
         return true;
     }
     return false;
@@ -165,6 +165,6 @@ uint8_t buffer_write_multiple(buffer_t* dest_buf, buffer_t* src_buf, size_t w_si
 
 void buffer_print(buffer_t* buf) {
     for(int i = 0; i < buf->capacity; ++i) {
-        printf("%d", buf->buffer[i]);
+        printf("%hhu", buf->buffer[i]);
     }
 }
