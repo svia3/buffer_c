@@ -12,7 +12,7 @@ struct buffer_t {
     uint8_t* buffer;
     size_t read_index;  // head of array -> start reading from here.
     size_t fill_index;  // next available byte to write to
-    // uint8_t size; 
+    // uint8_t size;
     size_t capacity;
     // bool full;
 };
@@ -58,7 +58,7 @@ uint8_t buffer_read(buffer_t* src_buf);
  * @param  buf_handle_buf Pass by pointer; address of buffer struct
  * @return                Number of read bytes; copied into struct buffer
  */
-uint8_t buffer_read_multiple(buffer_t* src_buf, buffer_t* dest_buf, size_t r_size); /* Read one byte if available */
+uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size); /* Read one byte if available */
 
 /**
  * Write a single byte to the destination buffer; checking if there is enough
