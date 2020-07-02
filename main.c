@@ -39,7 +39,7 @@ int main()
     uint8_t size = sizeof(write_to_arr)/sizeof(uint8_t);
     // printf("size: %d\n", size);
     bool write_status = buffer_write_multiple(&rx_buf, write_to_arr, size);
-    printf("success: %d\n", write_status);
+    printf("success: %d\n", write_status); 
     buffer_print(&rx_buf);
     // printf("%d\n", buffer_read_multiple(write_to_arr, tx_buf->buffer, 10));
     // printf("rx read index: %zu\n", rx_buf.read_index);
