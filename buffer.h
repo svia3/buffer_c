@@ -81,7 +81,15 @@ bool buffer_write(buffer_t* dest_buf, uint8_t write_byte);
 bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);   /* Write from source to dest buffer for sending data */
 
 /**
- * For app layer testing and debugging. Print the buffer array.
+ * For app layer testing and debugging. Print the buffer array. Implemented
+ * to minmic the output of printing an array for visualization in python.
  * @param buf Buffer to print from
  */
 void buffer_print(buffer_t* buf);
+
+/**
+ * For app layer testing and debugging. Call buffer_print and display other
+ * buffer_t structure data.
+ * @param buf Buffer to display data for
+ */
+void print_buffer_stats(buffer_t* buf);

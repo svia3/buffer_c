@@ -8,10 +8,12 @@
 #define RX154_MAX_BUFF_SIZE 255
 
 
-void print_arr(uint8_t* arr) {
-    for(int i = 0; i < 128; ++i) {
-        printf("%d", arr[i]);
+void print_arr(uint8_t* arr, size_t size) {
+    printf("\nArray: [");
+    for(int i = 0; i < size; ++i) {
+        printf("%d,", arr[i]);
     }
+    printf("]");
     printf("\n");
 }
 
@@ -20,41 +22,59 @@ int main()
     // 15.4 API calls
     // uint8_t arr[128];
     // Inside 15.4 -----
-    struct buffer_t rx_buf;
-    buffer_init(&rx_buf, RX154_MAX_BUFF_SIZE);
+    struct buffer_t test_buf;
+    buffer_init(&test_buf, RX154_MAX_BUFF_SIZE);
     // printf("%lu", buf.capacity);
     // char arr[] = "012345";
-    // buffer_write_multiple(&rx_buf, (uint8_t*)&arr, sizeof(arr)/sizeof(uint8_t));
-    printf("rx read index: %zu\n", rx_buf.read_index);
-    printf("rx fill index: %zu\n", rx_buf.fill_index);
-    buffer_print(&rx_buf);
+    // buffer_write_multiple(&test_buf, (uint8_t*)&arr, sizeof(arr)/sizeof(uint8_t));
+    // buffer_print(&test_buf);
 
     /**
         Create a pseudo transimission buffer for testing -> this will be used
         in 15.4 as the data req structure.
     */
-    // struct buffer_t tx_buf;
-    // buffer_init(&tx_buf, RX154_MAX_BUFF_SIZE);
-    uint8_t write_to_arr[] = {1, 2, 3, 4, 5};
-    uint8_t size = sizeof(write_to_arr)/sizeof(uint8_t);
-    // printf("size: %d\n", size);
-    bool write_status = buffer_write_multiple(&rx_buf, write_to_arr, size);
-    printf("success: %d\n", write_status); 
-    buffer_print(&rx_buf);
-    // printf("%d\n", buffer_read_multiple(write_to_arr, tx_buf->buffer, 10));
-    // printf("rx read index: %zu\n", rx_buf.read_index);
-    // printf("rx fill index: %zu\n", rx_buf.fill_index);
-    write_status = buffer_write_multiple(&rx_buf, write_to_arr, size);
-    // printf("rx read index: %zu\n", rx_buf.read_index);
-    // printf("rx fill index: %zu\n", rx_buf.fill_index);
+
+    /**
+     * Testng writing to buffer --- WORKS **!
+     */
+    // uint8_t write_arr[] = {1, 2, 3, 4, 5};
+    // uint8_t size = sizeof(write_arr)/sizeof(uint8_t);
+    // print_arr(write_arr, size);
+    // buffer_write_multiple(&test_buf, write_arr, size);
+    // buffer_write_multiple(&test_buf, write_arr, size);
+    // buffer_write(&test_buf, 123);
+    // print_buffer_stats(&test_buf);
+    uint8_t overflow_arr[127];
+    uint8_t size = sizeof(overflow_arr)/sizeof(uint8_t);
+    for(int i = 0; i < 127; i++) {
+        overflow_arr[i] = i;
+    }
+    // print_arr(overflow_arr, 128);
+    buffer_write_multiple(&test_buf, overflow_arr, size);
+    // print_buffer_stats(&test_buf);
+    buffer_write_multiple(&test_buf, overflow_arr, size);
+    // print_buffer_stats(&test_buf);
+
+    /**
+     * Testing reading single byte -- WORKS**!
+     */
+    printf("read byte: %d\n", buffer_read(&test_buf));
+    printf("read byte: %d\n", buffer_read(&test_buf));
+    printf("read byte: %d\n", buffer_read(&test_buf));
+    print_buffer_stats(&test_buf);
+
+    /**
+     * Testing reading multiple bytes --
+     */
+    uint8_t read_buf[10];
+    buffer_read_multiple(read_buf, &test_buf, 10);
+    print_arr(read_buf, 10);
+    print_buffer_stats(&test_buf);
+    buffer_read_multiple(read_buf, &test_buf, 10);
+    print_arr(read_buf, 10);
+    print_buffer_stats(&test_buf);
 
 
-    // now read
-    uint8_t read_buf[128];
-    memset(read_buf, 1, 128);
-    print_arr(read_buf);
-    printf("read bytes: %d\n", buffer_read_multiple(read_buf, &rx_buf, 5));
-    print_arr(read_buf);
-    // printf("%d", buffer_get_size(tx_buf));
+
     return 0;
 }
