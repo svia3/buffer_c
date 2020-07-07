@@ -1,14 +1,10 @@
 
 #include "buffer.h"
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #define RX154_MAX_BUFF_SIZE 255
-
-/* How many bytes are available in the buffer? -> move over to buffer_c*/
-static uint8_t buffer_get_size(buffer_t* buf);
 
 bool buffer_init(buffer_t* buf, size_t capacity)
 {
@@ -48,7 +44,7 @@ void buffer_free(buffer_t* buf)
  * Check how many bytes are available to read (occupied) in the buffer array.
  * @param buf Pass by pointer; address of buffer struct
  */
-static uint8_t buffer_get_size(buffer_t* buf)
+uint8_t buffer_get_size(buffer_t* buf)
 {
     /* Init fill space */
     int total_bytes = 0;
@@ -123,44 +119,41 @@ bool buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 {
     /* How full is the write buffer? */
     uint8_t available = buffer_get_size(dest_buf);
-    /* Are there less bytes available than number you want to w rite */
-    // int vacant = dest_buf->capacity - available;
+    int vacant = dest_buf->capacity - available;
+    /* Are there less bytes available than number you want to write */
     if(vacant <= 0) {
         buffer_flush(dest_buf);
         return false;
     }
     /* Copy to local buffer by reference; Offset using read pointer */
-    if (available + 1 <= dest_buf->capacity) {
-      memcpy(&dest_buf->buffer[dest_buf->fill_index], &write_byte, 1);
-      /* Update write pointer by write size */
-      dest_buf->fill_index = (dest_buf->fill_index + 1) % dest_buf->capacity;
-      return true;
-    }
+    memcpy(&dest_buf->buffer[dest_buf->fill_index], &write_byte, 1);
+    /* Update write pointer by write size */
+    dest_buf->fill_index = (dest_buf->fill_index + 1) % dest_buf->capacity;
+    return true;
 }
 
 bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size) {
 
     /* How full is the write buffer?  */
     uint8_t available = buffer_get_size(dest_buf);
+    int vacant = dest_buf->capacity - available;
     /* Are there less bytes available than number you want to write */
-    // int vacant = dest_buf->capacity - available;
-    /* Change this later to fill up the buffer?*/
-    if(vacant <= w_size) {
-        buffer_flush(dest_buf); // CHANGE THIS ****!
+    if(vacant < w_size) {
+        buffer_flush(dest_buf);
         return false;
     }
-    /* Copy data over usign memset, make sure it won't overflow */
-    if(w_size + available <= dest_buf->capacity) {
+    /* Copy to local buffer by reference; Offset using read pointer */
+    if(w_size <= dest_buf->capacity) {
         // uint8_t* dest_offset = dest_buf->buffer + dest_buf->fill_index;    /* Circular */
         memcpy(&dest_buf->buffer[dest_buf->fill_index], src_arr, w_size);
         /* Update write pointer by write size */
         dest_buf->fill_index = (dest_buf->fill_index + w_size) % dest_buf->capacity;
         return true;
     }
-    return false;
 }
 
-void buffer_print(buffer_t* buf) {
+void buffer_print(buffer_t* buf)
+{
     printf("[");
     for(int i = 0; i < buf->capacity; ++i) {
         printf("%d,", buf->buffer[i]);
@@ -169,7 +162,8 @@ void buffer_print(buffer_t* buf) {
     printf("\n");
 }
 
-void print_buffer_stats(buffer_t* buf) {
+void print_buffer_stats(buffer_t* buf)
+{
     buffer_print(buf);
     printf("Read Index: %zu\n", buf->read_index);
     printf("Fill Index: %zu\n", buf->fill_index);

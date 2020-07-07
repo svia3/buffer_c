@@ -1,12 +1,13 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct buffer_t buffer_t;
 //typedef buffer_t* buf_handle_t;
 // typedef uint8_t (*available)(buf_handle_t);
 
 /* Types */
-typedef unsigned long size_t;
+//typedef unsigned int size_t;
 
 struct buffer_t {
     uint8_t* buffer;
@@ -16,6 +17,16 @@ struct buffer_t {
     size_t capacity;
     // bool full;
 };
+
+/**
+ * To be called from the FifteenDotFour::available member function; determine
+ * the number of bytes available in the buffer to be read. This is done by
+ * calculating the space between the write pointer ahead of the read pointer.
+ *
+ * @param buf   Pass by pointer; address f buffer struct
+ * @return      Number of bytes available in the buffer
+ */
+uint8_t buffer_get_size(buffer_t* buf);
 
 /**
  * Initialize and fill a default buffer structure along with statically
@@ -63,9 +74,10 @@ uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size
 /**
  * Write a single byte to the destination buffer; checking if there is enough
  * space inside of the buffer first and then copying over the single byte.
+ *
  * @param  dest_buf   Destination buffer struct
  * @param  write_byte Byte to be written
- * @return            1 for success, 0 if not 
+ * @return            true/false success
  */
 bool buffer_write(buffer_t* dest_buf, uint8_t write_byte);
 
@@ -76,13 +88,14 @@ bool buffer_write(buffer_t* dest_buf, uint8_t write_byte);
  * @param  src_buf  Pass by pointer
  * @param  dest_buf Pass by pointer
  * @param  w_size   Length of data
- * @return 1 if successful, 0 if not
+ * @return true/false success
  */
 bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);   /* Write from source to dest buffer for sending data */
 
 /**
  * For app layer testing and debugging. Print the buffer array. Implemented
  * to minmic the output of printing an array for visualization in python.
+ *
  * @param buf Buffer to print from
  */
 void buffer_print(buffer_t* buf);
@@ -90,6 +103,7 @@ void buffer_print(buffer_t* buf);
 /**
  * For app layer testing and debugging. Call buffer_print and display other
  * buffer_t structure data.
+ *
  * @param buf Buffer to display data for
  */
 void print_buffer_stats(buffer_t* buf);
