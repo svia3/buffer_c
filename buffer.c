@@ -123,29 +123,34 @@ bool buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 {
     /* How full is the write buffer? */
     uint8_t available = buffer_get_size(dest_buf);
-    int vacant = dest_buf->capacity - available;
+    /* Are there less bytes available than number you want to w rite */
+    // int vacant = dest_buf->capacity - available;
     if(vacant <= 0) {
         buffer_flush(dest_buf);
+        return false;
     }
     /* Copy to local buffer by reference; Offset using read pointer */
-    memcpy(&dest_buf->buffer[dest_buf->fill_index], &write_byte, 1);
-    /* Update write pointer by write size */
-    dest_buf->fill_index = (dest_buf->fill_index + 1) % dest_buf->capacity;
-    return true;
+    if (available + 1 <= dest_buf->capacity) {
+      memcpy(&dest_buf->buffer[dest_buf->fill_index], &write_byte, 1);
+      /* Update write pointer by write size */
+      dest_buf->fill_index = (dest_buf->fill_index + 1) % dest_buf->capacity;
+      return true;
+    }
 }
 
 bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size) {
 
     /* How full is the write buffer?  */
     uint8_t available = buffer_get_size(dest_buf);
-    int vacant = dest_buf->capacity - available;
     /* Are there less bytes available than number you want to write */
+    // int vacant = dest_buf->capacity - available;
     /* Change this later to fill up the buffer?*/
     if(vacant <= w_size) {
         buffer_flush(dest_buf); // CHANGE THIS ****!
+        return false;
     }
-    /* Copy data over usign memset */
-    if(w_size <= dest_buf->capacity) {
+    /* Copy data over usign memset, make sure it won't overflow */
+    if(w_size + available <= dest_buf->capacity) {
         // uint8_t* dest_offset = dest_buf->buffer + dest_buf->fill_index;    /* Circular */
         memcpy(&dest_buf->buffer[dest_buf->fill_index], src_arr, w_size);
         /* Update write pointer by write size */

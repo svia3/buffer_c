@@ -65,7 +65,7 @@ uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size
  * space inside of the buffer first and then copying over the single byte.
  * @param  dest_buf   Destination buffer struct
  * @param  write_byte Byte to be written
- * @return            1 for success
+ * @return            1 for success, 0 if not 
  */
 bool buffer_write(buffer_t* dest_buf, uint8_t write_byte);
 
