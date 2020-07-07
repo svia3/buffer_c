@@ -32,3 +32,10 @@
 *.su
 *.idb
 *.pdb
+
+# Directories
+/bin/*
+/obj/*
+
+# vim tmps
+*.swp
