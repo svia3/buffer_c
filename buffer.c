@@ -57,13 +57,13 @@ uint8_t buffer_get_size(buffer_t* buf)
     return total_bytes;
 }
 
-uint8_t buffer_read(buffer_t* src_buf)
+int16_t buffer_read(buffer_t* src_buf)
 {
-    if(!buffer_get_size(src_buf)) {
+    if(!buffer_get_size(src_buf) || !src_buf) {     /* Error */
         return -1;
-    }                            /* Error */
-    uint8_t read_byte = src_buf->buffer[src_buf->read_index];         /* Index of read byte */
-    src_buf->read_index = src_buf->read_index + 1 % src_buf->capacity;    /* Increment read index */
+    }
+    int16_t read_byte = src_buf->buffer[src_buf->read_index];               /* Index of read byte */
+    src_buf->read_index = src_buf->read_index + 1 % src_buf->capacity;       /* Increment read index */
     return read_byte;
 }
 
@@ -72,9 +72,8 @@ uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size
     /* If no bytes available. return immediately
         Save local variable to preserve stack space
     */
-    uint8_t available = buffer_get_size(src_buf);
-    if(!available) {
-        return -1;
+    if(!buffer_get_size(src_buf) || !r_size || !dest_buf || !src_buf) {
+        return 0;
     }
     /* Floor the read size if it is larger than the size of buffer */
     if(r_size > available) {
@@ -118,11 +117,10 @@ uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size
 bool buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 {
     /* How full is the write buffer? */
-    uint8_t available = buffer_get_size(dest_buf);
-    int vacant = dest_buf->capacity - available;
+    int vacant = dest_buf->capacity - buffer_get_size(dest_buf);
     /* Are there less bytes available than number you want to write */
     if(vacant <= 0) {
-        buffer_flush(dest_buf);
+//        buffer_flush(dest_buf);
         return false;
     }
     /* Copy to local buffer by reference; Offset using read pointer */
@@ -135,10 +133,9 @@ bool buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size) {
 
     /* How full is the write buffer?  */
-    uint8_t available = buffer_get_size(dest_buf);
-    int vacant = dest_buf->capacity - available;
+    int vacant = dest_buf->capacity - buffer_get_size(dest_buf);
     /* Are there less bytes available than number you want to write */
-    if(vacant < w_size) {
+    if(vacant < w_size || !w_size) {
         buffer_flush(dest_buf);
         return false;
     }
