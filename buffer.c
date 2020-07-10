@@ -59,11 +59,11 @@ uint8_t buffer_get_size(buffer_t* buf)
 
 int16_t buffer_read(buffer_t* src_buf)
 {
-    if(!buffer_get_size(src_buf) || !src_buf) {     /* Error */
+    if(!buffer_get_size(src_buf)) {
         return -1;
-    }
-    int16_t read_byte = src_buf->buffer[src_buf->read_index];               /* Index of read byte */
-    src_buf->read_index = src_buf->read_index + 1 % src_buf->capacity;       /* Increment read index */
+    }                            /* Error */
+    int16_t read_byte = src_buf->buffer[src_buf->read_index];         /* Index of read byte */
+    src_buf->read_index = src_buf->read_index + 1 % src_buf->capacity;    /* Increment read index */
     return read_byte;
 }
 
@@ -72,7 +72,8 @@ uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size
     /* If no bytes available. return immediately
         Save local variable to preserve stack space
     */
-    if(!buffer_get_size(src_buf) || !r_size || !dest_buf || !src_buf) {
+    uint8_t available = buffer_get_size(src_buf);
+    if(available || !r_size) {
         return 0;
     }
     /* Floor the read size if it is larger than the size of buffer */
@@ -114,39 +115,47 @@ uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size
     return bytes_end + rem_bytes;
 }
 
-bool buffer_write(buffer_t* dest_buf, uint8_t write_byte)
+size_t buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 {
     /* How full is the write buffer? */
-    int vacant = dest_buf->capacity - buffer_get_size(dest_buf);
+    uint8_t available = buffer_get_size(dest_buf);
+    int vacant = dest_buf->capacity - available;
     /* Are there less bytes available than number you want to write */
     if(vacant <= 0) {
 //        buffer_flush(dest_buf);
-        return false;
+        return 0;
     }
     /* Copy to local buffer by reference; Offset using read pointer */
     memcpy(&dest_buf->buffer[dest_buf->fill_index], &write_byte, 1);
     /* Update write pointer by write size */
     dest_buf->fill_index = (dest_buf->fill_index + 1) % dest_buf->capacity;
-    return true;
+    return 1;
 }
 
-bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size) {
+size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size) {
 
     /* How full is the write buffer?  */
-    int vacant = dest_buf->capacity - buffer_get_size(dest_buf);
+    uint8_t available = buffer_get_size(dest_buf);
+    int vacant = (dest_buf->capacity - available) - 1;
     /* Are there less bytes available than number you want to write */
-    if(vacant < w_size || !w_size) {
-        buffer_flush(dest_buf);
-        return false;
+    if (!w_size || w_size >= dest_buf->capacity) {
+        return 0;
+    }
+    /* Up to the user to tell that the number of bytes written < the size they intended */
+    if(vacant < w_size) {
+        // uint8_t* dest_offset = dest_buf->buffer + dest_buf->fill_index;    /* Circular */
+        memcpy(&dest_buf->buffer[dest_buf->fill_index], src_arr, vacant);
+        /* Update write pointer by write size */
+        dest_buf->fill_index = (dest_buf->fill_index + (vacant) % dest_buf->capacity;
+        /* Make sure fill index does not overlap with r_pointer -> this is start condition */
+        return vacant;
     }
     /* Copy to local buffer by reference; Offset using read pointer */
-    if(w_size <= dest_buf->capacity) {
-        // uint8_t* dest_offset = dest_buf->buffer + dest_buf->fill_index;    /* Circular */
-        memcpy(&dest_buf->buffer[dest_buf->fill_index], src_arr, w_size);
-        /* Update write pointer by write size */
-        dest_buf->fill_index = (dest_buf->fill_index + w_size) % dest_buf->capacity;
-        return true;
-    }
+    // uint8_t* dest_offset = dest_buf->buffer + dest_buf->fill_index;    /* Circular */
+    memcpy(&dest_buf->buffer[dest_buf->fill_index], src_arr, w_size);
+    /* Update write pointer by write size */
+    dest_buf->fill_index = (dest_buf->fill_index + w_size) % dest_buf->capacity;
+    return w_size;
 }
 
 void buffer_print(buffer_t* buf)

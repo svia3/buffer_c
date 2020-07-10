@@ -84,7 +84,7 @@ extern "C" {
      * @param  write_byte Byte to be written
      * @return            true/false success
      */
-    bool buffer_write(buffer_t* dest_buf, uint8_t write_byte);
+    size_t buffer_write(buffer_t* dest_buf, uint8_t write_byte);
 
     /**
      * Take bytes from source buffer and copy to destination buffer. Handles transfer
@@ -95,7 +95,7 @@ extern "C" {
      * @param  w_size   Length of data
      * @return true/false success
      */
-    bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);   /* Write from source to dest buffer for sending data */
+    size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);   /* Write from source to dest buffer for sending data */
 
     /**
      * For app layer testing and debugging. Print the buffer array. Implemented
