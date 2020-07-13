@@ -1,6 +1,3 @@
-#ifndef buffer_h
-#define buffer_h
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -65,7 +62,7 @@ extern "C" {
      * Return -1 if no bytes available and none read.
      *
      * @param buf      Pass by pointer; address of buffer struct
-     * @return         Number of read bytes; copied into struct buffer
+     * @return         Byte value copied into rx_buffer
      */
     int16_t buffer_read(buffer_t* src_buf);
 
@@ -75,7 +72,7 @@ extern "C" {
      * Return -1 if no bytes were available and none  read.
      *
      * @param  buf_handle_buf Pass by pointer; address of buffer struct
-     * @return                Number of read bytes; copied into struct buffer
+     * @return                Number of read bytes; copied into dest_buf
      */
     uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size); /* Read one byte if available */
 
@@ -85,9 +82,9 @@ extern "C" {
      *
      * @param  dest_buf   Destination buffer struct
      * @param  write_byte Byte to be written
-     * @return            true/false success
+     * @return            Number of bytes written to tx_buffer (1/0)
      */
-    bool buffer_write(buffer_t* dest_buf, uint8_t write_byte);
+    size_t buffer_write(buffer_t* dest_buf, uint8_t write_byte);
 
     /**
      * Take bytes from source buffer and copy to destination buffer. Handles transfer
@@ -96,9 +93,9 @@ extern "C" {
      * @param  src_buf  Pass by pointer
      * @param  dest_buf Pass by pointer
      * @param  w_size   Length of data
-     * @return true/false success
+     * @return          Number of bytes written to tx_buffer
      */
-    bool buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);   /* Write from source to dest buffer for sending data */
+    size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);   /* Write from source to dest buffer for sending data */
 
     /**
      * For app layer testing and debugging. Print the buffer array. Implemented
@@ -118,5 +115,4 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif
 #endif
