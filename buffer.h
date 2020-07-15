@@ -57,6 +57,14 @@ extern "C" {
     void buffer_free(buffer_t* buf);
 
     /**
+     * Return the first value at the read index w/out popping and incrementing
+     * read index
+     * @param  buf Pass by pointer; address of buffer struct
+     * @return     Front of buffer
+     */
+    uint8_t buffer_peak(buffer_t* buf);
+    
+    /**
      * Pop one byte off the top of the buffer queue if there are bytes available
      * Move over the read pointer by one byte (one index)
      * Return -1 if no bytes available and none read.

@@ -5,11 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define RX154_MAX_BUFF_SIZE 255
+// #define RX154_MAX_BUFF_SIZE 255
+#define MTU             128
 
 
 void print_arr(uint8_t* arr, size_t size) {
-    printf("\nArray: [");
+    printf("Array: [");
     for(int i = 0; i < size; ++i) {
         printf("%d,", arr[i]);
     }
@@ -23,7 +24,7 @@ int main()
     // uint8_t arr[128];
     // Inside 15.4 -----
     struct buffer_t test_buf;
-    buffer_init(&test_buf, RX154_MAX_BUFF_SIZE);
+    buffer_init(&test_buf, MTU);
     // printf("%lu", buf.capacity);
     // char arr[] = "012345";
     // buffer_write_multiple(&test_buf, (uint8_t*)&arr, sizeof(arr)/sizeof(uint8_t));
@@ -44,35 +45,61 @@ int main()
     // buffer_write_multiple(&test_buf, write_arr, size);
     // buffer_write(&test_buf, 123);
     // print_buffer_stats(&test_buf);
-    uint8_t overflow_arr[127];
+    uint8_t overflow_arr[200];
     uint8_t size = sizeof(overflow_arr)/sizeof(uint8_t);
-    for(int i = 0; i < 127; i++) {
+    for(int i = 0; i < 200; ++i) {
         overflow_arr[i] = i;
     }
     // print_arr(overflow_arr, 128);
-    buffer_write_multiple(&test_buf, overflow_arr, size);
+    printf("%zu\n", buffer_write_multiple(&test_buf, overflow_arr, 100));
     // print_buffer_stats(&test_buf);
-    buffer_write_multiple(&test_buf, overflow_arr, size);
+    printf("%zu\n", buffer_write_multiple(&test_buf, overflow_arr, 50));
     // print_buffer_stats(&test_buf);
-
     /**
      * Testing reading single byte -- WORKS**!
      */
-    printf("read byte: %d\n", buffer_read(&test_buf));
-    printf("read byte: %d\n", buffer_read(&test_buf));
-    printf("read byte: %d\n", buffer_read(&test_buf));
+    // printf("read byte: %d\n", buffer_read(&test_buf));
+    // printf("read byte: %d\n", buffer_read(&test_buf));
+    // printf("read byte: %d\n", buffer_read(&test_buf));
     print_buffer_stats(&test_buf);
 
     /**
      * Testing reading multiple bytes --
      */
-    uint8_t read_buf[10];
-    buffer_read_multiple(read_buf, &test_buf, 10);
-    print_arr(read_buf, 10);
+     for(int i = 0; i < 200; ++i) {
+         overflow_arr[i] = 1;
+     }
+     // print_arr(overflow_arr, size);
+    uint8_t read_buf[200];
+    for(int i = 0; i < 200; ++i) {
+        read_buf[i] = 0;
+    }
+    // printf("Read Multiple:        %hhu\n", buffer_read_multiple(read_buf, &test_buf, 10));
+    // print_arr(read_buf, 200);
+//
+    printf("Read Multiple:        %hhu\n", buffer_read_multiple(read_buf, &test_buf, 20));
+    // print_arr(read_buf, 200);
     print_buffer_stats(&test_buf);
-    buffer_read_multiple(read_buf, &test_buf, 10);
-    print_arr(read_buf, 10);
+    // printf("Write one byte:       %zu\n", buffer_write(&test_buf, 8));
+    // print_buffer_stats(&test_buf);
+    // buffer_flush(&test_buf);
+    // printf("Write one byte:       %zu\n", buffer_write(&test_buf, 22));
+    // print_buffer_stats(&test_buf);
+    printf("Write multiple bytes: %zu\n", buffer_write_multiple(&test_buf, overflow_arr, 10));
     print_buffer_stats(&test_buf);
+    for(int i = 0; i < 200; ++i) {
+        overflow_arr[i] = 2;
+    }
+    printf("Write multiple bytes: %zu\n", buffer_write_multiple(&test_buf, overflow_arr, 5));
+    print_buffer_stats(&test_buf);
+    // printf("Write multiple bytes: %zu\n", buffer_write_multiple(&test_buf, overflow_arr, 50));
+    // printf("Write multiple bytes: %zu\n", buffer_write_multiple(&test_buf, overflow_arr, 50));
+    // print_buffer_stats(&test_buf);
+    // buffer_flush(&test_buf);
+    // printf("Write multiple bytes: %zu\n", buffer_write_multiple(&test_buf, overflow_arr, 10));
+    // buffer_read_multiple(read_buf, &test_buf, 10);
+    // print_arr(read_buf, 10);
+    // print_buffer_stats(&test_buf);
 
 
 
