@@ -45,19 +45,20 @@ size_t buffer_peek(buffer_t* buf)
     return buf->buffer[buf->read_index];
 }
 
-uint8_t buffer_get_size(buffer_t* buf)
+size_t buffer_get_size(buffer_t* buf)
 {
     /* Init fill space */
     int total_bytes = buf->fill_index - buf->read_index;
     /* Default write in front of read ptr, if circular, calcualate bytes
             at the beginning and end of the buffer */
-    if (total_bytes < 0)
-        total_bytes = (buf->capacity - buf->read_index) + buf->fill_index;
+    if (total_bytes < 0) {
+        total_bytes += buf->capacity;
+    }
 
     return total_bytes;
 }
 
-size_t buffer_read(buffer_t* src_buf)
+int16_t buffer_read(buffer_t* src_buf)
 {
     if(!buffer_get_size(src_buf)) {
         return -1;
@@ -112,13 +113,13 @@ size_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size)
     src_buf->read_index = rem_bytes;
     // dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
     /* How to handle edge case where read pointer crosses write pointer? */
-    return bytes_end + rem_bytes;
+    return r_size;
 }
 
 size_t buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 {
     /* How full is the write buffer? */
-    uint8_t available = buffer_get_size(dest_buf);
+    size_t available = buffer_get_size(dest_buf);
     int vacant = dest_buf->capacity - available - 1;
     /* Are there less bytes available than number you want to write */
     if(vacant <= 0) {
@@ -133,27 +134,28 @@ size_t buffer_write(buffer_t* dest_buf, uint8_t write_byte)
 }
 
 size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size) {
-
+    /* Book keeping */
+    int vacant_end;
     /* How full is the write buffer?  */
-    uint8_t available = buffer_get_size(dest_buf);
+    size_t available = buffer_get_size(dest_buf);
     /* One less than total space, do not let pointers overlap to retain sizing info*/
     int vacant = dest_buf->capacity - available - 1;
-    /* Are there less bytes available than number you want to write */
-    if (!w_size || w_size > dest_buf->capacity)
-    {
+    /* Terminate quickly if size is null */
+    if (!w_size || !vacant) {
         return 0;
     }
     /* Floor the write size -> 4 spaces, want to write 5, write 3 bytes */
-    if(w_size > vacant)
-    {
+    if(w_size > vacant) {
         w_size = vacant;
     }
     /* Up to the user to tell that the number of bytes written < the size they intended */
     /* Writing to the end of the buffer overflow -> wrap around -> fill_index is empty space*/
-    int vacant_end = dest_buf->capacity - dest_buf->fill_index;
     /* If the read_ptr is in front of the w_ptr, vacancy is space between*/
-    if (dest_buf->read_index > dest_buf->fill_index)
+    if (dest_buf->read_index > dest_buf->fill_index) {
         vacant_end = dest_buf->read_index - dest_buf->fill_index - 1;
+    } else {
+        vacant_end = dest_buf->capacity - dest_buf->fill_index;
+    }
     // printf("VACANE END: %d", vacant_end);
     if (w_size <= vacant_end) {
         /* Make sure that the write_ptr does not overlap with the read_ptr */

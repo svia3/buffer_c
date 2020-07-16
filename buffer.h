@@ -72,7 +72,7 @@ extern "C" {
      * @param buf      Pass by pointer; address of buffer struct
      * @return         Byte value copied into rx_buffer
      */
-    size_t buffer_read(buffer_t* src_buf);
+    int16_t buffer_read(buffer_t* src_buf);
 
     /**
      * Pop a specificed amount of bytes off the top of the buffer queue of available.
