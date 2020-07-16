@@ -62,7 +62,7 @@ extern "C" {
      * @param  buf Pass by pointer; address of buffer struct
      * @return     Front of buffer
      */
-    uint8_t buffer_peak(buffer_t* buf);
+    uint8_t buffer_peek(buffer_t* buf);
     
     /**
      * Pop one byte off the top of the buffer queue if there are bytes available
@@ -103,7 +103,7 @@ extern "C" {
      * @param  w_size   Length of data
      * @return          Number of bytes written to tx_buffer
      */
-    size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);   /* Write from source to dest buffer for sending data */
+    size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);
 
     /**
      * For app layer testing and debugging. Print the buffer array. Implemented
