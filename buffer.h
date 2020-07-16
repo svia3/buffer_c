@@ -62,8 +62,8 @@ extern "C" {
      * @param  buf Pass by pointer; address of buffer struct
      * @return     Front of buffer
      */
-    uint8_t buffer_peek(buffer_t* buf);
-    
+    size_t buffer_peek(buffer_t* buf);
+
     /**
      * Pop one byte off the top of the buffer queue if there are bytes available
      * Move over the read pointer by one byte (one index)
@@ -72,7 +72,7 @@ extern "C" {
      * @param buf      Pass by pointer; address of buffer struct
      * @return         Byte value copied into rx_buffer
      */
-    int16_t buffer_read(buffer_t* src_buf);
+    size_t buffer_read(buffer_t* src_buf);
 
     /**
      * Pop a specificed amount of bytes off the top of the buffer queue of available.
@@ -82,7 +82,7 @@ extern "C" {
      * @param  buf_handle_buf Pass by pointer; address of buffer struct
      * @return                Number of read bytes; copied into dest_buf
      */
-    uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size); /* Read one byte if available */
+    size_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size); /* Read one byte if available */
 
     /**
      * Write a single byte to the destination buffer; checking if there is enough

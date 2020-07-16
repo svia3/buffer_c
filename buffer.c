@@ -40,7 +40,7 @@ void buffer_free(buffer_t* buf)
     free(buf->buffer);
 }
 
-uint8_t buffer_peek(buffer_t* buf)
+size_t buffer_peek(buffer_t* buf)
 {
     return buf->buffer[buf->read_index];
 }
@@ -52,12 +52,12 @@ uint8_t buffer_get_size(buffer_t* buf)
     /* Default write in front of read ptr, if circular, calcualate bytes
             at the beginning and end of the buffer */
     if (total_bytes < 0)
-        total_bytes = buf->capacity - buf->read_index + buf->fill_index;
+        total_bytes = (buf->capacity - buf->read_index) + buf->fill_index;
 
     return total_bytes;
 }
 
-int16_t buffer_read(buffer_t* src_buf)
+size_t buffer_read(buffer_t* src_buf)
 {
     if(!buffer_get_size(src_buf)) {
         return -1;
@@ -67,7 +67,7 @@ int16_t buffer_read(buffer_t* src_buf)
     return read_byte;
 }
 
-uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size)
+size_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size)
 {
     /* If no bytes available. return immediately
         Save local variable to preserve stack space
@@ -107,7 +107,7 @@ uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size
     /* Copy the remaining bytes at the front of the circular buffer) */
     int rem_bytes = r_size - bytes_end;
     /* Copy to local buffer by reference; Start at beginning of buf array*/
-    memcpy(dest_buf, src_buf, rem_bytes);
+    memcpy(&dest_buf[bytes_end], src_buf, rem_bytes);
     /* Move read pointer accordingly to amount of bytes read */
     src_buf->read_index = rem_bytes;
     // dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
@@ -140,10 +140,14 @@ size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size
     int vacant = dest_buf->capacity - available - 1;
     /* Are there less bytes available than number you want to write */
     if (!w_size || w_size > dest_buf->capacity)
+    {
         return 0;
+    }
     /* Floor the write size -> 4 spaces, want to write 5, write 3 bytes */
     if(w_size > vacant)
+    {
         w_size = vacant;
+    }
     /* Up to the user to tell that the number of bytes written < the size they intended */
     /* Writing to the end of the buffer overflow -> wrap around -> fill_index is empty space*/
     int vacant_end = dest_buf->capacity - dest_buf->fill_index;
@@ -167,7 +171,7 @@ size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size
     /* Copy the remaining bytes at the front of the circular buffer) */
     int bytes_rem = w_size - vacant_end;
     /* Copy to local buffer by reference; Start at beginning of buf array*/
-    memcpy(dest_buf->buffer, src_arr, bytes_rem);
+    memcpy(dest_buf->buffer, &src_arr[vacant_end], bytes_rem);
     /* Move write pointer accordingly to amount of bytes read */
     dest_buf->fill_index = bytes_rem;
     // dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
