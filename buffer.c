@@ -51,14 +51,9 @@ size_t buffer_get_size(buffer_t* buf)
     int total_bytes = buf->fill_index - buf->read_index;
     /* Default write in front of read ptr, if circular, calcualate bytes
             at the beginning and end of the buffer */
-<<<<<<< HEAD
     if (total_bytes < 0) {
         total_bytes += buf->capacity;
     }
-=======
-    if (total_bytes < 0)
-        total_bytes = buf->capacity - buf->read_index + buf->fill_index;
->>>>>>> f89364e479c36da0d3b75047774fc5a49e706eee
 
     return total_bytes;
 }
