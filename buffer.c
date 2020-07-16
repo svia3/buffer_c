@@ -108,7 +108,7 @@ uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size
     /* Copy the remaining bytes at the front of the circular buffer) */
     int rem_bytes = r_size - bytes_end;
     /* Copy to local buffer by reference; Start at beginning of buf array*/
-    memcpy(dest_buf, src_buf, rem_bytes);
+    memcpy(&dest_buf[bytes_end], src_buf, rem_bytes);
     /* Move read pointer accordingly to amount of bytes read */
     src_buf->read_index = rem_bytes;
     // dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
@@ -173,7 +173,7 @@ size_t buffer_write_multiple(buffer_t* dest_buf, const uint8_t* src_arr, size_t 
     /* Copy the remaining bytes at the front of the circular buffer) */
     int bytes_rem = w_size - vacant_end;
     /* Copy to local buffer by reference; Start at beginning of buf array*/
-    memcpy(dest_buf->buffer, src_arr, bytes_rem);
+    memcpy(dest_buf->buffer, &src_arr[vacant_end], bytes_rem);
     /* Move write pointer accordingly to amount of bytes read */
     dest_buf->fill_index = bytes_rem;
     // dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
