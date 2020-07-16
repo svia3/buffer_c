@@ -33,7 +33,7 @@ extern "C" {
      * @param buf   Pass by pointer; address f buffer struct
      * @return      Number of bytes available in the buffer
      */
-     uint8_t buffer_get_size(buffer_t* buf);
+     size_t buffer_get_size(buffer_t* buf);
 
     /**
      * Initialize and fill a default buffer structure along with statically
@@ -103,7 +103,7 @@ extern "C" {
      *
      * @param  src_buf  Pass by pointer
      * @param  dest_buf Pass by pointer
-     * @param  w_size   Length of data 
+     * @param  w_size   Length of data
      * @return          Number of bytes written to tx_buffer
      */
     size_t buffer_write_multiple(buffer_t* dest_buf, const uint8_t* src_arr, size_t w_size);

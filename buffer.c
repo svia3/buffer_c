@@ -133,33 +133,21 @@ size_t buffer_write(buffer_t* dest_buf, const uint8_t write_byte)
     return 1;
 }
 
-<<<<<<< HEAD
-size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size) {
-    /* Book keeping */
-    int vacant_end;
-=======
-size_t buffer_write_multiple(buffer_t* dest_buf, const uint8_t* src_arr, size_t w_size) {
 
->>>>>>> f89364e479c36da0d3b75047774fc5a49e706eee
+size_t buffer_write_multiple(buffer_t* dest_buf, const uint8_t* src_arr, size_t w_size) {
+    int vacant_end;
     /* How full is the write buffer?  */
     size_t available = buffer_get_size(dest_buf);
     /* One less than total space, do not let pointers overlap to retain sizing info*/
     int vacant = dest_buf->capacity - available - 1;
-<<<<<<< HEAD
     /* Terminate quickly if size is null */
     if (!w_size || !vacant) {
-=======
-    /* Are there less bytes available than number you want to write */
-    if (!w_size || w_size > dest_buf->capacity)
->>>>>>> f89364e479c36da0d3b75047774fc5a49e706eee
         return 0;
+    }
     /* Floor the write size -> 4 spaces, want to write 5, write 3 bytes */
-<<<<<<< HEAD
     if(w_size > vacant) {
-=======
-    if(w_size > vacant)
->>>>>>> f89364e479c36da0d3b75047774fc5a49e706eee
         w_size = vacant;
+    }
     /* Up to the user to tell that the number of bytes written < the size they intended */
     /* Writing to the end of the buffer overflow -> wrap around -> fill_index is empty space*/
     /* If the read_ptr is in front of the w_ptr, vacancy is space between*/
@@ -191,7 +179,7 @@ size_t buffer_write_multiple(buffer_t* dest_buf, const uint8_t* src_arr, size_t 
     // dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
     /* How to handle edge case where read pointer crosses write pointer? */
     return w_size;
-} 
+}
 
 void buffer_print(buffer_t* buf)
 {
@@ -210,7 +198,7 @@ void print_buffer_stats(buffer_t* buf)
     buffer_print(buf);
     printf("Read Index: %zu\n", buf->read_index);
     printf("Fill Index: %zu\n", buf->fill_index);
-    printf("Size:       %d\n", buffer_get_size(buf));
+    printf("Size:       %zu\n", buffer_get_size(buf));
     printf("Vacant:     %lu\n", buf->capacity - buffer_get_size(buf) - 1);
     printf("--------------------------------------------------------\n");
 }

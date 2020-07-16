@@ -71,7 +71,7 @@ int main()
     for(int i = 0; i < 200; ++i) {
         read_buf[i] = 0;
     }
-    printf("Read Multiple:        %zu\n", buffer_read_multiple(read_buf, &test_buf, 30));
+    printf("Read Multiple:        %hhu\n", buffer_read_multiple(read_buf, &test_buf, 30));
     print_arr(read_buf, 200);
 //
     int write_bytes = 50;
