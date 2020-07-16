@@ -51,9 +51,9 @@ int main()
         overflow_arr[i] = i;
     }
     // print_arr(overflow_arr, 128);
-    printf("%zu\n", buffer_write_multiple(&test_buf, overflow_arr, 100));
+    printf("%zu\n", buffer_write_multiple(&test_buf, &overflow_arr[50], 100));
     // print_buffer_stats(&test_buf);
-    printf("%zu\n", buffer_write_multiple(&test_buf, overflow_arr, 50));
+    // printf("%zu\n", buffer_write_multiple(&test_buf, overflow_arr, 50));
     // print_buffer_stats(&test_buf);
     /**
      * Testing reading single byte -- WORKS**!
@@ -71,20 +71,20 @@ int main()
     for(int i = 0; i < 200; ++i) {
         read_buf[i] = 0;
     }
-    // printf("Read Multiple:        %hhu\n", buffer_read_multiple(read_buf, &test_buf, 10));
-    // print_arr(read_buf, 200);
-//
-    int write_bytes = 10;
-    printf("Read Multiple:        %zu\n", buffer_read_multiple(read_buf, &test_buf, 20));
+    printf("Read Multiple:        %zu\n", buffer_read_multiple(read_buf, &test_buf, 30));
     print_arr(read_buf, 200);
-    print_buffer_stats(&test_buf);
+//
+    int write_bytes = 50;
+    // printf("Read Multiple:        %zu\n", buffer_read_multiple(read_buf, &test_buf, 20));
+    // print_arr(read_buf, 200);
+    // print_buffer_stats(&test_buf);
     // printf("Write one byte:       %zu\n", buffer_write(&test_buf, 8));
     // print_buffer_stats(&test_buf);
     // buffer_flush(&test_buf);
     // printf("Write one byte:       %zu\n", buffer_write(&test_buf, 22));
     // print_buffer_stats(&test_buf);
-    // printf("Write multiple bytes: %zu\n", buffer_write_multiple(&test_buf, overflow_arr, write_bytes));
-    // print_buffer_stats(&test_buf);
+    printf("Write multiple bytes: %zu\n", buffer_write_multiple(&test_buf, overflow_arr, write_bytes));
+    print_buffer_stats(&test_buf);
     // for(int i = 0; i < 200; ++i) {
     //     overflow_arr[i] = 2;
     // }
