@@ -66,7 +66,7 @@ extern "C" {
      * @return     Front of buffer
      */
     uint8_t buffer_peek(buffer_t* buf);
-    
+
     /**
      * Pop one byte off the top of the buffer queue if there are bytes available
      * Move over the read pointer by one byte (one index)
@@ -103,7 +103,7 @@ extern "C" {
      *
      * @param  src_buf  Pass by pointer
      * @param  dest_buf Pass by pointer
-     * @param  w_size   Length of data
+     * @param  w_size   Length of data 
      * @return          Number of bytes written to tx_buffer
      */
     size_t buffer_write_multiple(buffer_t* dest_buf, const uint8_t* src_arr, size_t w_size);

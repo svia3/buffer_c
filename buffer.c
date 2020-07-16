@@ -191,7 +191,7 @@ size_t buffer_write_multiple(buffer_t* dest_buf, const uint8_t* src_arr, size_t 
     // dest_buf->fill_index = (dest_buf->fill_index + filled_bytes) % dest_buf->capacity;
     /* How to handle edge case where read pointer crosses write pointer? */
     return w_size;
-}
+} 
 
 void buffer_print(buffer_t* buf)
 {
