@@ -1,3 +1,6 @@
+#ifndef buffer_h
+#define buffer_h
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -62,8 +65,8 @@ extern "C" {
      * @param  buf Pass by pointer; address of buffer struct
      * @return     Front of buffer
      */
-    size_t buffer_peek(buffer_t* buf);
-
+    uint8_t buffer_peek(buffer_t* buf);
+    
     /**
      * Pop one byte off the top of the buffer queue if there are bytes available
      * Move over the read pointer by one byte (one index)
@@ -72,7 +75,7 @@ extern "C" {
      * @param buf      Pass by pointer; address of buffer struct
      * @return         Byte value copied into rx_buffer
      */
-    size_t buffer_read(buffer_t* src_buf);
+    int16_t buffer_read(buffer_t* src_buf);
 
     /**
      * Pop a specificed amount of bytes off the top of the buffer queue of available.
@@ -82,7 +85,7 @@ extern "C" {
      * @param  buf_handle_buf Pass by pointer; address of buffer struct
      * @return                Number of read bytes; copied into dest_buf
      */
-    size_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size); /* Read one byte if available */
+    uint8_t buffer_read_multiple(uint8_t* dest_buf, buffer_t* src_buf, size_t r_size); /* Read one byte if available */
 
     /**
      * Write a single byte to the destination buffer; checking if there is enough
@@ -92,7 +95,7 @@ extern "C" {
      * @param  write_byte Byte to be written
      * @return            Number of bytes written to tx_buffer (1/0)
      */
-    size_t buffer_write(buffer_t* dest_buf, uint8_t write_byte);
+    size_t buffer_write(buffer_t* dest_buf, const uint8_t write_byte);
 
     /**
      * Take bytes from source buffer and copy to destination buffer. Handles transfer
@@ -103,7 +106,7 @@ extern "C" {
      * @param  w_size   Length of data
      * @return          Number of bytes written to tx_buffer
      */
-    size_t buffer_write_multiple(buffer_t* dest_buf, uint8_t* src_arr, size_t w_size);
+    size_t buffer_write_multiple(buffer_t* dest_buf, const uint8_t* src_arr, size_t w_size);
 
     /**
      * For app layer testing and debugging. Print the buffer array. Implemented
@@ -123,4 +126,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
